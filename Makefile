@@ -51,10 +51,15 @@ ifeq ($(COMMIT),)
 endif
 
 ICONNAME=icon.gif
+
+.PHONY: show-app
+show-app:
+	@echo ">>>>> Building $(APP) at commit $(COMMIT)"
+
 ################
 # Default rule #
 ################
-all: default
+all: show-app default
 
 ############
 # Platform #

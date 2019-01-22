@@ -45,4 +45,13 @@ in rec {
     cp '${baking}/bin/app.hex' baking.hex
     tar czf "$out" wallet.hex baking.hex
   '';
+
+  # Script that places you in the environment to run `make`, etc.
+  env-shell = pkgs.writeScriptBin "env-shell" ''
+    #!${pkgs.stdenv.shell}
+    export BOLOS_SDK='${bolosSdk}'
+    export BOLOS_ENV='${bolosEnv}'
+    export COMMIT='${commit}'
+    '${fhs}/bin/enter-fhs'
+  '';
 }
