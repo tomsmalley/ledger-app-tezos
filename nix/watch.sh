@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 
+set -Eeuo pipefail
+
 root="$(git rev-parse --show-toplevel)"
 
-if [ -z "$@" ]; then
-  unset ___empty
-  : "${___empty:?No command given; try running $0 make}"
-fi
+fail() { unset ___empty; : "${___empty:?$1}"; }
+
+[ -z "${1:-}" ] && fail "No command given; try running $0 make"
+
+watchdirs=("$root/default.nix" "$root/nix" "$root/Makefile" "$root/src")
 
 inotifywait="$(nix-build '<nixpkgs>' -A inotify-tools --no-out-link)/bin/inotifywait"
 while true; do
   "$root/nix/env.sh" <<EOF
     $@
 EOF
-  "$inotifywait" -qre close_write "$root/default.nix" "$root/nix" "$root/src" "$root/Makefile";
+  if ! "$inotifywait" -qre close_write "${watchdirs[@]}"; then
+    fail "inotifywait failed"
+  fi
   echo "----------------------"
   echo
 done
