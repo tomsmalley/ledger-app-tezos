@@ -26,7 +26,7 @@ let
     export APP='${if bakingApp then "tezos_baking" else "tezos_wallet"}'
     export COMMIT='${commit}'
     make clean
-    make
+    make all
     EOF
 
     mkdir -p "$out"
