@@ -15,8 +15,6 @@ void init_globals(void);
 #   define TEZOS_BUFSIZE 256
 #endif
 
-#define INS_MAX 0x0B
-
 #define PRIVATE_KEY_DATA_SIZE 32
 
 struct priv_generate_key_pair {
@@ -35,14 +33,12 @@ typedef struct {
 
     struct {
       cx_ecfp_public_key_t public_key;
-      uint8_t bip32_path_length;
-      uint32_t bip32_path[MAX_BIP32_PATH];
+      bip32_path_t bip32_path;
       cx_curve_t curve;
     } pubkey;
 
     struct {
-      uint8_t bip32_path_length;
-      uint32_t bip32_path[MAX_BIP32_PATH];
+      bip32_path_t bip32_path;
       cx_curve_t curve;
 
       uint8_t message_data[TEZOS_BUFSIZE];
@@ -111,3 +107,11 @@ extern unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 extern WIDE nvram_data N_data_real; // TODO: What does WIDE actually mean?
 
 #define N_data (*(WIDE nvram_data*)PIC(&N_data_real))
+
+
+static inline void throw_stack_size() {
+    uint8_t st;
+    // uint32_t tmp1 = (uint32_t)&st - (uint32_t)&app_stack_canary;
+    uint32_t tmp2 = (uint32_t)global.stack_root - (uint32_t)&st;
+    THROW(0x9000 + tmp2);
+}

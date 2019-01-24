@@ -4,6 +4,11 @@
 #include "os_io_seproxyhal.h"
 
 #include <stdbool.h>
+#include <string.h>
+
+
+// Macro that produces a compile-error showing the sizeof the argument.
+#define SIZEOF_ERROR(x)  char (*__kaboom)[sizeof(x)] = 1;
 
 // Return number of bytes to transmit (tx)
 typedef uint32_t (*apdu_handler)(uint8_t instruction);
@@ -25,13 +30,24 @@ struct key_pair {
 
 // Baking Auth
 #define MAX_BIP32_PATH 10
+
+typedef struct {
+    uint8_t length;
+    uint32_t components[MAX_BIP32_PATH];
+} bip32_path_t;
+
+static inline void copy_bip32_path(bip32_path_t *const out, bip32_path_t const *const in) {
+    memcpy(out->components, in->components, in->length * sizeof(*in->components));
+    out->length = in->length;
+}
+
 typedef struct {
     cx_curve_t curve;
     level_t highest_level;
     bool had_endorsement;
-    uint8_t path_length;
-    uint32_t bip32_path[MAX_BIP32_PATH];
+    bip32_path_t bip32_path;
 } nvram_data;
+
 
 #define PKH_STRING_SIZE 40
 #define PROTOCOL_HASH_BASE58_STRING_SIZE 52 // e.g. "ProtoBetaBetaBetaBetaBetaBetaBetaBetaBet11111a5ug96" plus null byte
@@ -119,3 +135,12 @@ struct parsed_operation_group {
     struct parsed_contract signing;
     struct parsed_operation operation;
 };
+
+// Maximum number of APDU instructions
+#define INS_MAX 0x0B
+
+#define APDU_INS(x) \
+  ({ \
+    _Static_assert(x <= INS_MAX, "APDU instruction is out of bounds"); \
+    x; \
+  })
