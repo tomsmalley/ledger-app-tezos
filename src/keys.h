@@ -8,6 +8,11 @@
 #include "os_cx.h"
 #include "types.h"
 
+struct bip32_path_wire {
+    uint8_t length;
+    uint32_t components[0];
+} __attribute((packed))__;
+
 // throws
 void read_bip32_path(/*in*/ size_t buf_size, /*in*/ uint8_t const *buf, /*out*/ bip32_path_t *const out);
 

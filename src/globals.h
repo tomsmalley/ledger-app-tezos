@@ -22,6 +22,16 @@ struct priv_generate_key_pair {
     struct key_pair res;
 };
 
+struct apdu_setup_globals {
+    bip32_path_t bip32_path;
+    cx_curve_t curve;
+    chain_id_t main_chain_id;
+    struct {
+        level_t main;
+        level_t test;
+    } hwm;
+};
+
 typedef struct {
   void *stack_root;
   apdu_handler handlers[INS_MAX];
@@ -48,6 +58,8 @@ typedef struct {
       uint8_t magic_number;
       bool hash_only;
     } sign;
+
+    struct apdu_setup_globals setup;
   } u;
 
   struct {
@@ -107,6 +119,16 @@ extern unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 extern WIDE nvram_data N_data_real; // TODO: What does WIDE actually mean?
 
 #define N_data (*(WIDE nvram_data*)PIC(&N_data_real))
+
+// Properly updates NVRAM data to prevent any clobbering of data.
+// 'out_param' defines the name of a pointer to the nvram_data struct
+// that 'body' can change to apply updates.
+#define UPDATE_NVRAM(out_name, body) ({ \
+    nvram_data *const out_name = &global.baking_auth.new_data; \
+    memcpy(&global.baking_auth.new_data, &N_data, sizeof(global.baking_auth.new_data)); \
+    body; \
+    nvm_write((void*)&N_data, &global.baking_auth.new_data, sizeof(N_data)); \
+  })
 
 
 static inline void throw_stack_size() {

@@ -26,18 +26,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-struct bip32_path_wire {
-    uint8_t length;
-    uint32_t components[0];
-} __attribute((packed))__;
-
 void read_bip32_path(/*in*/ size_t buf_size, /*in*/ uint8_t const *buf, /*out*/ bip32_path_t *const out) {
     struct bip32_path_wire const *const buf_as_bip32 = (struct bip32_path_wire const *)buf;
 
+    if (buf_size < sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS)
     out->length = READ_UNALIGNED_BIG_ENDIAN(uint8_t, &buf_as_bip32->length);
 
-    // TODO: Why the +1 below?
-    if (buf_size < out->length * sizeof(*out->components) + 1) THROW(EXC_WRONG_LENGTH_FOR_INS);
+    if (buf_size < out->length * sizeof(*buf_as_bip32->components) + sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS);
     if (out->length == 0 || out->length > MAX_BIP32_PATH) THROW(EXC_WRONG_VALUES);
 
     for (size_t i = 0; i < out->length; i++) {

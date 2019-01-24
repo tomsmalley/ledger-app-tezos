@@ -15,6 +15,10 @@ typedef uint32_t (*apdu_handler)(uint8_t instruction);
 
 typedef uint32_t level_t;
 
+typedef struct {
+    uint32_t v;
+} chain_id_t;
+
 // UI
 typedef bool (*ui_callback_t)(void); // return true to go back to idle screen
 
@@ -42,9 +46,19 @@ static inline void copy_bip32_path(bip32_path_t *const out, bip32_path_t const *
 }
 
 typedef struct {
-    cx_curve_t curve;
     level_t highest_level;
     bool had_endorsement;
+} high_watermark_t;
+
+typedef struct {
+    chain_id_t main_chain_id;
+    struct {
+        high_watermark_t main;
+        high_watermark_t test;
+    } hwm;
+    level_t highest_level;
+    bool had_endorsement;
+    cx_curve_t curve;
     bip32_path_t bip32_path;
 } nvram_data;
 

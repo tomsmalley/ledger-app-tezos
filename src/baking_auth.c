@@ -7,9 +7,7 @@
 #include "to_string.h"
 #include "ui_prompt.h"
 
-// Order matters
-#include "os.h"
-#include "cx.h"
+#include "os_cx.h"
 
 #include <string.h>
 
@@ -17,13 +15,16 @@ bool is_valid_level(level_t lvl) {
     return !(lvl & 0xC0000000);
 }
 
-void write_highest_level(level_t lvl, bool is_endorsement) {
-    if (!is_valid_level(lvl)) return;
-    memcpy(&global.baking_auth.new_data, &N_data, sizeof(global.baking_auth.new_data));
-    global.baking_auth.new_data.highest_level = lvl;
-    global.baking_auth.new_data.had_endorsement = is_endorsement;
-    nvm_write((void*)&N_data, &global.baking_auth.new_data, sizeof(N_data));
-    change_idle_display(N_data.highest_level);
+static void write_high_watermark(parse_baking_data_t const *const in) {
+    if (!is_valid_level(in->highest_level)) THROW(EXC_WRONG_VALUES);
+    UPDATE_NVRAM(ram, {
+        high_watermark_t *const dest = in->chain_id == ram->main_chain_id
+            ? &ram->hwm.main
+            : &ram->hwm.test;
+        dest->highest_level = lvl;
+        dest->had_endorsement = is_endorsement;
+    });
+    change_idle_display(N_data.hwm.main.highest_level);
 }
 
 void authorize_baking(cx_curve_t curve, bip32_path_t const *const bip32_path) {
@@ -65,12 +66,15 @@ void guard_baking_authorized(cx_curve_t curve, void *data, int datalen, bip32_pa
 }
 
 void update_high_water_mark(void *data, int datalen) {
-    struct parsed_baking_data baking_info;
-    if (!parse_baking_data(data, datalen, &baking_info)) {
+    struct parsed_baking_data const baking_info;
+    if (!parse_baking_data(&baking_info, data, datalen)) {
         return; // Must be signing a delegation
     }
-
-    write_highest_level(baking_info.level, baking_info.is_endorsement);
+    high_watermark_t const hwm = {
+        .highest_level = baking_info .level,
+        .had_endorsement = baking_info.is_endorsement
+    };
+    write_high_watermark(baking_info.level, baking_info.is_endorsement);
 }
 
 void update_auth_text(void) {
@@ -142,36 +146,36 @@ void prompt_address(
 #endif
 }
 
-struct __attribute__((packed)) block {
-    char magic_byte;
+struct block_wire {
+    uint8_t magic_byte;
     uint32_t chain_id;
-    level_t level;
+    uint32_t level;
     uint8_t proto;
     // ... beyond this we don't care
-};
+} __attribute__((packed));
 
-struct __attribute__((packed)) endorsement {
+struct endorsement_wire {
     uint8_t magic_byte;
     uint32_t chain_id;
     uint8_t branch[32];
     uint8_t tag;
     uint32_t level;
-};
+} __attribute__((packed));
 
-bool parse_baking_data(const void *data, size_t length, struct parsed_baking_data *out) {
+bool parse_baking_data(parsed_baking_data_t *const out, void const *const data, size_t const length) {
     switch (get_magic_byte(data, length)) {
         case MAGIC_BYTE_BAKING_OP:
-            if (length != sizeof(struct endorsement)) return false;
-            const struct endorsement *endorsement = data;
-            // TODO: Check chain ID
+            if (length != sizeof(struct endorsement_wire)) return false;
+            struct endorsement_wire const *const endorsement = data;
             out->is_endorsement = true;
-            out->level = READ_UNALIGNED_BIG_ENDIAN(level_t, &endorsement->level);
+            out->chain_id = READ_UNALIGNED_BIG_ENDIAN(uint32_t, &endorsement->chain_id);
+            out->level = READ_UNALIGNED_BIG_ENDIAN(uint32_t, &endorsement->level);
             return true;
         case MAGIC_BYTE_BLOCK:
-            if (length < sizeof(struct block)) return false;
-            // TODO: Check chain ID
+            if (length < sizeof(struct block_wire)) return false;
+            struct block const *const block = data;
             out->is_endorsement = false;
-            const struct block *block = data;
+            out->chain_id = READ_UNALIGNED_BIG_ENDIAN(uint32_t, &block->chain_id);
             out->level = READ_UNALIGNED_BIG_ENDIAN(level_t, &block->level);
             return true;
         case MAGIC_BYTE_INVALID:
