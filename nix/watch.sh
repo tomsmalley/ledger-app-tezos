@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -uo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 
