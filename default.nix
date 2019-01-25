@@ -52,6 +52,6 @@ in rec {
     export BOLOS_SDK='${bolosSdk}'
     export BOLOS_ENV='${bolosEnv}'
     export COMMIT='${commit}'
-    '${fhs}/bin/enter-fhs'
+    exec '${fhs}/bin/enter-fhs'
   '';
 }
