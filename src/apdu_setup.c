@@ -42,9 +42,11 @@ static bool ok(void) {
         ram->hwm.test.highest_level = G.hwm.test;
         ram->hwm.test.had_endorsement = false;
     });
-    delayed_send(provide_pubkey(G_io_apdu_buffer, &global.u.setup.public_key));
+    delayed_send(provide_pubkey(G_io_apdu_buffer, &G.public_key));
     return true;
 }
+
+#define SET_STATIC_UI_VALUE(index, str) register_ui_callback(index, copy_string, STATIC_UI_VALUE(str))
 
 static void prompt_setup(
     cx_curve_t const curve,
@@ -52,10 +54,30 @@ static void prompt_setup(
     ui_callback_t const ok_cb,
     ui_callback_t const cxl_cb)
 {
-    pubkey_to_pkh_string(
-        global.baking_auth.address_display_data, sizeof(global.baking_auth.address_display_data), curve, key);
+    static const size_t TYPE_INDEX = 0;
+    static const size_t ADDRESS_INDEX = 1;
+    static const size_t CHAIN_INDEX = 2;
+    static const size_t MAIN_HWM_INDEX = 3;
+    static const size_t TEST_HWM_INDEX = 4;
 
-    ui_prompt(get_baking_prompts(), baking_values, ok_cb, cxl_cb);
+    static const char *const prompts[] = {
+        PROMPT("Authorize"),
+        PROMPT("Address"),
+        PROMPT("Chain"),
+        PROMPT("Main Chain HWM"),
+        PROMPT("Test Chain HWM"),
+        NULL,
+    };
+
+    pubkey_to_pkh_string(G.ui.pkh, sizeof(G.ui.pkh), curve, key);
+
+    SET_STATIC_UI_VALUE(TYPE_INDEX, "Baking?");
+    register_ui_callback(ADDRESS_INDEX, copy_string, &G.ui.pkh);
+    register_ui_callback(CHAIN_INDEX, chaid_id_to_string, &G.main_chain_id);
+    register_ui_callback(MAIN_HWM_INDEX, number_to_string_indirect32, &G.hwm.main);
+    register_ui_callback(TEST_HWM_INDEX, number_to_string_indirect32, &G.hwm.test);
+
+    ui_prompt(prompts, NULL, ok_cb, cxl_cb);
 }
 
 unsigned int handle_apdu_setup(__attribute__((unused)) uint8_t instruction) {

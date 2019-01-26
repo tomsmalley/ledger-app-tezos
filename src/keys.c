@@ -29,7 +29,7 @@
 size_t read_bip32_path(/*out*/ bip32_path_t *const out, /*in*/ uint8_t const *buf, /*in*/ size_t buf_size) {
     struct bip32_path_wire const *const buf_as_bip32 = (struct bip32_path_wire const *)buf;
 
-    if (buf_size < sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS)
+    if (buf_size < sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS);
 
     size_t ix = 0;
     out->length = CONSUME_UNALIGNED_BIG_ENDIAN(ix, uint8_t, &buf_as_bip32->length);

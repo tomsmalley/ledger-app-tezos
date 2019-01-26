@@ -38,7 +38,7 @@ void pubkey_to_pkh_string(char *buff, uint32_t buff_size, cx_curve_t curve,
     pkh_to_string(buff, buff_size, curve, hash);
 }
 
-void compute_hash_checksum(uint8_t (const out)[TEZOS_HASH_CHECKSUM_SIZE], void *const data, size_t size) {
+void compute_hash_checksum(uint8_t out[TEZOS_HASH_CHECKSUM_SIZE], void *const data, size_t size) {
     uint8_t checksum[32];
     cx_hash_sha256((void*)&data, size, checksum, sizeof(checksum));
     cx_hash_sha256(checksum, sizeof(checksum), checksum, sizeof(checksum));
@@ -115,13 +115,13 @@ void chaid_id_to_string(char *buff, size_t const buff_size, chain_id_t const cha
     // Data to encode
     struct __attribute__((packed)) {
         uint8_t prefix[3];
-        uint8_t chain_id[CHAIN_ID_SIZE];
+        int32_t chain_id;
         uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
     } data = {
-        .prefix = {87, 82, 0}
+        .prefix = {87, 82, 0},
+        .chain_id = chain_id.v
     };
 
-    memcpy(data.chain_id, chain_id.v, sizeof(data.chain_id));
     compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));
 
     size_t out_size = buff_size;
