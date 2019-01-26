@@ -471,7 +471,7 @@ unsigned int handle_apdu_sign(uint8_t instruction) {
         clear_data();
         memset(global.u.sign.message_data, 0, sizeof(global.u.sign.message_data));
         global.u.sign.message_data_length = 0;
-        read_bip32_path(dataLength, dataBuffer, &global.u.sign.bip32_path);
+        read_bip32_path(&global.u.sign.bip32_path, dataBuffer, dataLength);
         global.u.sign.curve = curve_code_to_curve(G_io_apdu_buffer[OFFSET_CURVE]);
         return_ok();
 #ifndef BAKING_APP

@@ -8,6 +8,8 @@
 
 #define NO_CONTRACT_STRING "None"
 
+#define TEZOS_HASH_CHECKSUM_SIZE 4
+
 static void pkh_to_string(char *buff, const size_t buff_size, const cx_curve_t curve, const uint8_t hash[HASH_SIZE]);
 
 // These functions output terminating null bytes, and return the ending offset.
@@ -36,15 +38,22 @@ void pubkey_to_pkh_string(char *buff, uint32_t buff_size, cx_curve_t curve,
     pkh_to_string(buff, buff_size, curve, hash);
 }
 
+void compute_hash_checksum(uint8_t (const out)[TEZOS_HASH_CHECKSUM_SIZE], void *const data, size_t size) {
+    uint8_t checksum[32];
+    cx_hash_sha256((void*)&data, size, checksum, sizeof(checksum));
+    cx_hash_sha256(checksum, sizeof(checksum), checksum, sizeof(checksum));
+    memcpy(out, checksum, sizeof(out));
+}
+
 void pkh_to_string(char *buff, const size_t buff_size, const cx_curve_t curve,
                    const uint8_t hash[HASH_SIZE]) {
     if (buff_size < PKH_STRING_SIZE) THROW(EXC_WRONG_LENGTH);
 
     // Data to encode
     struct __attribute__((packed)) {
-        char prefix[3];
+        uint8_t prefix[3];
         uint8_t hash[HASH_SIZE];
-        char checksum[4];
+        uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
     } data;
 
     // prefix
@@ -75,12 +84,7 @@ void pkh_to_string(char *buff, const size_t buff_size, const cx_curve_t curve,
 
     // hash
     memcpy(data.hash, hash, sizeof(data.hash));
-
-    // checksum -- twice because them's the rules
-    uint8_t checksum[32];
-    cx_hash_sha256((void*)&data, sizeof(data) - sizeof(data.checksum), checksum, sizeof(checksum));
-    cx_hash_sha256(checksum, sizeof(checksum), checksum, sizeof(checksum));
-    memcpy(data.checksum, checksum, sizeof(data.checksum));
+    compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));
 
     size_t out_size = buff_size;
     if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);
@@ -91,24 +95,34 @@ void protocol_hash_to_string(char *buff, const size_t buff_size, const uint8_t h
 
     // Data to encode
     struct __attribute__((packed)) {
-        char prefix[2];
+        uint8_t prefix[2];
         uint8_t hash[PROTOCOL_HASH_SIZE];
-        char checksum[4];
+        uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
     } data = {
         .prefix = {2, 170}
     };
 
     memcpy(data.hash, hash, sizeof(data.hash));
+    compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));
 
-    // checksum -- twice because them's the rules
-    // Hash the input (prefix + hash)
-    // Hash that hash.
-    // Take the first 4 bytes of that
-    // Voila: a checksum.
-    uint8_t checksum[32];
-    cx_hash_sha256((void*)&data, sizeof(data) - sizeof(data.checksum), checksum, sizeof(checksum));
-    cx_hash_sha256(checksum, sizeof(checksum), checksum, sizeof(checksum));
-    memcpy(data.checksum, checksum, sizeof(data.checksum));
+    size_t out_size = buff_size;
+    if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);
+}
+
+void chaid_id_to_string(char *buff, size_t const buff_size, chain_id_t const chain_id) {
+    if (buff_size < CHAIN_ID_BASE58_STRING_SIZE) THROW(EXC_WRONG_LENGTH);
+
+    // Data to encode
+    struct __attribute__((packed)) {
+        uint8_t prefix[3];
+        uint8_t chain_id[CHAIN_ID_SIZE];
+        uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
+    } data = {
+        .prefix = {87, 82, 0}
+    };
+
+    memcpy(data.chain_id, chain_id.v, sizeof(data.chain_id));
+    compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));
 
     size_t out_size = buff_size;
     if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);

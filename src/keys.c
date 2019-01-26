@@ -26,18 +26,22 @@
 #include <stdbool.h>
 #include <string.h>
 
-void read_bip32_path(/*in*/ size_t buf_size, /*in*/ uint8_t const *buf, /*out*/ bip32_path_t *const out) {
+size_t read_bip32_path(/*out*/ bip32_path_t *const out, /*in*/ uint8_t const *buf, /*in*/ size_t buf_size) {
     struct bip32_path_wire const *const buf_as_bip32 = (struct bip32_path_wire const *)buf;
 
     if (buf_size < sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS)
-    out->length = READ_UNALIGNED_BIG_ENDIAN(uint8_t, &buf_as_bip32->length);
 
-    if (buf_size < out->length * sizeof(*buf_as_bip32->components) + sizeof(buf_as_bip32->length)) THROW(EXC_WRONG_LENGTH_FOR_INS);
+    size_t ix = 0;
+    out->length = CONSUME_UNALIGNED_BIG_ENDIAN(ix, uint8_t, &buf_as_bip32->length);
+
+    if (buf_size - ix < out->length * sizeof(*buf_as_bip32->components)) THROW(EXC_WRONG_LENGTH_FOR_INS);
     if (out->length == 0 || out->length > MAX_BIP32_PATH) THROW(EXC_WRONG_VALUES);
 
     for (size_t i = 0; i < out->length; i++) {
-        out->components[i] = READ_UNALIGNED_BIG_ENDIAN(uint32_t, &buf_as_bip32->components[i]);
+        out->components[i] = CONSUME_UNALIGNED_BIG_ENDIAN(ix, uint32_t, &buf_as_bip32->components[i]);
     }
+
+    return ix;
 }
 
 struct key_pair *generate_key_pair(cx_curve_t const curve, bip32_path_t const *const bip32_path) {

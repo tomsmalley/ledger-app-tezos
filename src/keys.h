@@ -14,7 +14,7 @@ struct bip32_path_wire {
 } __attribute((packed))__;
 
 // throws
-void read_bip32_path(/*in*/ size_t buf_size, /*in*/ uint8_t const *buf, /*out*/ bip32_path_t *const out);
+size_t read_bip32_path(/*out*/ bip32_path_t *const out, /*in*/ uint8_t const *buf, /*in*/ size_t buf_size);
 
 struct key_pair *generate_key_pair(cx_curve_t const curve, bip32_path_t const *const bip32_path);
 

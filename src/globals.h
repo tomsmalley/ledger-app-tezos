@@ -25,11 +25,20 @@ struct priv_generate_key_pair {
 struct apdu_setup_globals {
     bip32_path_t bip32_path;
     cx_curve_t curve;
+    cx_ecfp_public_key_t public_key;
     chain_id_t main_chain_id;
     struct {
         level_t main;
         level_t test;
     } hwm;
+    struct {
+        char pkh[PKH_STRING_SIZE];
+        char chain_id[CHAIN_ID_BASE58_STRING_SIZE];
+        struct {
+          char main[20];
+          char test[20];
+        } hwm;
+    } ui;
 };
 
 typedef struct {

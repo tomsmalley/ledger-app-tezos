@@ -2,12 +2,10 @@
 
 #include "apdu.h"
 #include "baking_auth.h"
+#include "cx.h"
 #include "globals.h"
 #include "keys.h"
 #include "ui.h"
-
-// Order matters
-#include "cx.h"
 
 #include <string.h>
 
@@ -57,7 +55,7 @@ unsigned int handle_apdu_get_public_key(uint8_t instruction) {
         copy_bip32_path(&global.u.pubkey.bip32_path, &N_data.bip32_path);
     } else {
 #endif
-        read_bip32_path(G_io_apdu_buffer[OFFSET_LC], dataBuffer, &global.u.pubkey.bip32_path);
+        read_bip32_path(&global.u.pubkey.bip32_path, dataBuffer,  G_io_apdu_buffer[OFFSET_LC]);
 #ifdef BAKING_APP
         if (global.u.pubkey.bip32_path.length == 0) {
             THROW(EXC_WRONG_LENGTH_FOR_INS);

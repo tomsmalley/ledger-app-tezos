@@ -32,12 +32,11 @@ void authorize_baking(cx_curve_t curve, bip32_path_t const *const bip32_path) {
         return;
     }
 
-    global.baking_auth.new_data.highest_level = N_data.highest_level;
-    global.baking_auth.new_data.had_endorsement = N_data.had_endorsement;
-    global.baking_auth.new_data.curve = curve;
-    copy_bip32_path(&global.baking_auth.new_data.bip32_path, bip32_path);
-    nvm_write((void*)&N_data, &global.baking_auth.new_data, sizeof(N_data));
-    change_idle_display(N_data.highest_level);
+    UPDATE_NVRAM(ram, {
+        ram->curve = curve;
+        copy_bip32_path(&ram->bip32_path, bip32_path);
+    });
+    change_idle_display(N_data.hwm.main.highest_level);
 }
 
 bool is_level_authorized(level_t level, bool is_endorsement) {

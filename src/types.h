@@ -15,9 +15,15 @@ typedef uint32_t (*apdu_handler)(uint8_t instruction);
 
 typedef uint32_t level_t;
 
+#define CHAIN_ID_BASE58_STRING_SIZE 15
+
 typedef struct {
     uint32_t v;
 } chain_id_t;
+
+// Mainnet Chain ID: NetXdQprcVkpaWU
+static uint8_t const mainnet_chain_id_bytes[] = {122, 6, 167, 112};
+static chain_id_t const mainnet_chain_id = { .v = (uint32_t)mainnet_chain_id_bytes };
 
 // UI
 typedef bool (*ui_callback_t)(void); // return true to go back to idle screen
