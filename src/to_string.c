@@ -22,17 +22,14 @@ void parsed_contract_to_string(char *buff, uint32_t buff_size, const struct pars
         return;
     }
 
-    cx_curve_t curve;
-    if (contract->originated != 0) {
-        curve = CX_CURVE_NONE;
-    } else {
-        curve = curve_code_to_curve(contract->curve_code);
-    }
+    cx_curve_t const curve = contract->originated != 0
+        ? CX_CURVE_NONE;
+        : curve_code_to_curve(contract->curve_code);
     pkh_to_string(buff, buff_size, curve, contract->hash);
 }
 
 void pubkey_to_pkh_string(char *buff, uint32_t buff_size, cx_curve_t curve,
-                         const cx_ecfp_public_key_t *public_key) {
+                          const cx_ecfp_public_key_t *public_key) {
     uint8_t hash[HASH_SIZE];
     public_key_hash(hash, curve, public_key);
     pkh_to_string(buff, buff_size, curve, hash);
@@ -109,7 +106,7 @@ void protocol_hash_to_string(char *buff, const size_t buff_size, const uint8_t h
     if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);
 }
 
-void chaid_id_to_string(char *buff, size_t const buff_size, chain_id_t const chain_id) {
+void chain_id_to_string(char *buff, size_t const buff_size, chain_id_t const chain_id) {
     if (buff_size < CHAIN_ID_BASE58_STRING_SIZE) THROW(EXC_WRONG_LENGTH);
 
     // Data to encode
