@@ -48,7 +48,7 @@ static bool ok(void) {
 
 #define SET_STATIC_UI_VALUE(index, str) register_ui_callback(index, copy_string, STATIC_UI_VALUE(str))
 
-static void prompt_setup(
+__attribute__((noreturn)) static void prompt_setup(
     cx_curve_t const curve,
     cx_ecfp_public_key_t const *const key,
     ui_callback_t const ok_cb,

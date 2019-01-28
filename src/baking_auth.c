@@ -28,9 +28,8 @@ static void write_high_watermark(parsed_baking_data_t const *const in) {
 }
 
 void authorize_baking(cx_curve_t curve, bip32_path_t const *const bip32_path) {
-    if (bip32_path->components == NULL || bip32_path->length > MAX_BIP32_PATH || bip32_path->length == 0) {
-        return;
-    }
+    check_null(bip32_path);
+    if (bip32_path->length > MAX_BIP32_PATH || bip32_path->length == 0) return;
 
     UPDATE_NVRAM(ram, {
         ram->curve = curve;
@@ -52,7 +51,8 @@ static bool is_level_authorized(parsed_baking_data_t const *const baking_info) {
 }
 
 bool is_path_authorized(cx_curve_t curve, bip32_path_t const *const bip32_path) {
-    return bip32_path->components != NULL &&
+    check_null(bip32_path);
+    return
         bip32_path->length != 0 &&
         bip32_path->length == N_data.bip32_path.length &&
         curve == N_data.curve &&

@@ -23,7 +23,7 @@ void parsed_contract_to_string(char *buff, uint32_t buff_size, const struct pars
     }
 
     cx_curve_t const curve = contract->originated != 0
-        ? CX_CURVE_NONE;
+        ? CX_CURVE_NONE
         : curve_code_to_curve(contract->curve_code);
     pkh_to_string(buff, buff_size, curve, contract->hash);
 }
@@ -35,11 +35,11 @@ void pubkey_to_pkh_string(char *buff, uint32_t buff_size, cx_curve_t curve,
     pkh_to_string(buff, buff_size, curve, hash);
 }
 
-void compute_hash_checksum(uint8_t out[TEZOS_HASH_CHECKSUM_SIZE], void *const data, size_t size) {
+void compute_hash_checksum(uint8_t out[TEZOS_HASH_CHECKSUM_SIZE], void const *const data, size_t size) {
     uint8_t checksum[32];
-    cx_hash_sha256((void*)&data, size, checksum, sizeof(checksum));
+    cx_hash_sha256(data, size, checksum, sizeof(checksum));
     cx_hash_sha256(checksum, sizeof(checksum), checksum, sizeof(checksum));
-    memcpy(out, checksum, sizeof(out));
+    memcpy(out, checksum, TEZOS_HASH_CHECKSUM_SIZE);
 }
 
 void pkh_to_string(char *buff, const size_t buff_size, const cx_curve_t curve,
