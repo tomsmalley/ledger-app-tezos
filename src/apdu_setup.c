@@ -85,9 +85,9 @@ unsigned int handle_apdu_setup(__attribute__((unused)) uint8_t instruction) {
     G.hwm.test = CONSUME_UNALIGNED_BIG_ENDIAN(consumed, uint32_t, (uint8_t const *)&buf_as_setup->hwm.test);
     read_bip32_path(&G.bip32_path, (uint8_t const *)&buf_as_setup->bip32_path, dataLength - consumed);
 
-    struct key_pair *const pair = generate_key_pair(G.curve, &G.bip32_path);
-    memset(&pair->private_key, 0, sizeof(pair->private_key));
-    memcpy(&G.public_key, &pair->public_key, sizeof(G.public_key));
+
+    cx_ecfp_public_key_t const *const pubkey = generate_public_key(G.curve, &G.bip32_path);
+    memcpy(&G.public_key, pubkey, sizeof(G.public_key));
 
     prompt_setup(global.u.pubkey.curve, &global.u.pubkey.public_key, ok, delay_reject);
 }

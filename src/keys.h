@@ -14,12 +14,14 @@ struct bip32_path_wire {
 } __attribute__((packed));
 
 // throws
-size_t read_bip32_path(/*out*/ bip32_path_t *const out, /*in*/ uint8_t const *buf, /*in*/ size_t buf_size);
+size_t read_bip32_path(bip32_path_t *const out, uint8_t const *in, size_t const in_size);
 
 struct key_pair *generate_key_pair(cx_curve_t const curve, bip32_path_t const *const bip32_path);
+cx_ecfp_public_key_t const *generate_public_key(cx_curve_t const curve, bip32_path_t const *const bip32_path);
 
-cx_ecfp_public_key_t *public_key_hash(uint8_t output[HASH_SIZE], cx_curve_t curve,
-                                      const cx_ecfp_public_key_t *restrict public_key);
+cx_ecfp_public_key_t const *public_key_hash(
+    uint8_t output[HASH_SIZE], cx_curve_t curve,
+    cx_ecfp_public_key_t const *const restrict public_key);
 
 enum curve_code {
     TEZOS_ED,
