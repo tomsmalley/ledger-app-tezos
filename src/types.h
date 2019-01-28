@@ -155,7 +155,7 @@ struct parsed_operation_group {
 };
 
 // Maximum number of APDU instructions
-#define INS_MAX 0x0B
+#define INS_MAX 0x0C
 
 #define APDU_INS(x) \
   ({ \
