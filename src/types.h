@@ -62,7 +62,7 @@ typedef struct {
         high_watermark_t main;
         high_watermark_t test;
     } hwm;
-    level_t highest_level;
+    //level_t highest_level;
     bool had_endorsement;
     cx_curve_t curve;
     bip32_path_t bip32_path;

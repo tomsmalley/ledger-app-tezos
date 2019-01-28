@@ -33,11 +33,6 @@ struct apdu_setup_globals {
     } hwm;
     struct {
         char pkh[PKH_STRING_SIZE];
-        char chain_id[CHAIN_ID_BASE58_STRING_SIZE];
-        struct {
-          char main[20];
-          char test[20];
-        } hwm;
     } ui;
 };
 

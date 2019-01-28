@@ -66,7 +66,7 @@ uint32_t send_word_big_endian(uint32_t tx, uint32_t word) {
 unsigned int handle_apdu_hwm(__attribute__((unused)) uint8_t instruction) {
     uint32_t tx = 0;
 
-    level_t level = N_data.highest_level;
+    level_t level = N_data.hwm.main.highest_level;
     tx = send_word_big_endian(tx, level);
 
     G_io_apdu_buffer[tx++] = 0x90;

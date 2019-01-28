@@ -39,13 +39,16 @@ void authorize_baking(cx_curve_t curve, bip32_path_t const *const bip32_path) {
     change_idle_display(N_data.hwm.main.highest_level);
 }
 
-bool is_level_authorized(level_t level, bool is_endorsement) {
-    if (!is_valid_level(level)) return false;
-    if (level > N_data.highest_level) return true;
+static bool is_level_authorized(parsed_baking_data_t const *const baking_info) {
+    if (!is_valid_level(baking_info->level)) return false;
+    high_watermark_t *const hwm = baking_info->chain_id.v == N_data.main_chain_id.v
+        ? &N_data.hwm.main
+        : &N_data.hwm.test;
+    return baking_info->level > hwm->highest_level
 
-    // Levels are tied. In order for this to be OK, this must be an endorsement, and we must not
-    // have previously seen an endorsement.
-    return is_endorsement && !N_data.had_endorsement;
+        // Levels are tied. In order for this to be OK, this must be an endorsement, and we must not
+        // have previously seen an endorsement.
+        || (baking_info->is_endorsement && !hwm->had_endorsement);
 }
 
 bool is_path_authorized(cx_curve_t curve, bip32_path_t const *const bip32_path) {
@@ -61,7 +64,7 @@ void guard_baking_authorized(cx_curve_t curve, void *data, int datalen, bip32_pa
 
     parsed_baking_data_t baking_info;
     if (!parse_baking_data(&baking_info, data, datalen)) THROW(EXC_PARSE_ERROR);
-    if (!is_level_authorized(baking_info.level, baking_info.is_endorsement)) THROW(EXC_WRONG_VALUES);
+    if (!is_level_authorized(&baking_info)) THROW(EXC_WRONG_VALUES);
 }
 
 void update_high_water_mark(void *data, int datalen) {

@@ -12,7 +12,6 @@ void authorize_baking(cx_curve_t curve, bip32_path_t const *const bip32_path);
 void guard_baking_authorized(cx_curve_t curve, void *data, int datalen, bip32_path_t const *const bip32_path);
 bool is_path_authorized(cx_curve_t curve, bip32_path_t const *const bip32_path);
 void update_high_water_mark(void *data, int datalen);
-bool is_level_authorized(level_t level, bool is_endorsement);
 bool is_valid_level(level_t level);
 void update_auth_text(void);
 
