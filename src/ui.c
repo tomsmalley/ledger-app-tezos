@@ -138,7 +138,7 @@ static void ui_idle(void) {
 #ifdef BAKING_APP
     update_baking_idle_screens();
     ui_display(ui_idle_screen, NUM_ELEMENTS(ui_idle_screen),
-               do_nothing, exit_app, NUM_ELEMENTS(ui_idle_screen));
+               do_nothing, exit_app, 3);
 #else
     G.cxl_callback = exit_app;
     main_menu();
