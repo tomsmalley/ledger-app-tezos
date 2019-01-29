@@ -50,7 +50,7 @@ __attribute__((noreturn)) static void prompt_setup(
     static const size_t TEST_HWM_INDEX = 4;
 
     static const char *const prompts[] = {
-        PROMPT("Authorize"),
+        PROMPT("Setup"),
         PROMPT("Address"),
         PROMPT("Chain"),
         PROMPT("Main Chain HWM"),
@@ -69,7 +69,7 @@ __attribute__((noreturn)) static void prompt_setup(
     ui_prompt(prompts, NULL, ok_cb, cxl_cb);
 }
 
-unsigned int handle_apdu_setup(__attribute__((unused)) uint8_t instruction) {
+__attribute__((noreturn)) unsigned int handle_apdu_setup(__attribute__((unused)) uint8_t instruction) {
     if (READ_UNALIGNED_BIG_ENDIAN(uint8_t, &G_io_apdu_buffer[OFFSET_P1]) != 0) THROW(EXC_WRONG_PARAM);
 
     struct setup_wire const *const buf_as_setup = (struct setup_wire const *)&G_io_apdu_buffer[OFFSET_CDATA];
@@ -89,5 +89,5 @@ unsigned int handle_apdu_setup(__attribute__((unused)) uint8_t instruction) {
     cx_ecfp_public_key_t const *const pubkey = generate_public_key(G.curve, &G.bip32_path);
     memcpy(&G.public_key, pubkey, sizeof(G.public_key));
 
-    prompt_setup(global.u.pubkey.curve, &global.u.pubkey.public_key, ok, delay_reject);
+    prompt_setup(G.curve, &G.public_key, ok, delay_reject);
 }
