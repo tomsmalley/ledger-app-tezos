@@ -24,6 +24,7 @@ typedef struct {
 // Mainnet Chain ID: NetXdQprcVkpaWU
 static uint8_t const mainnet_chain_id_bytes[] = {122, 6, 167, 112};
 static chain_id_t const mainnet_chain_id = { .v = (uint32_t)mainnet_chain_id_bytes };
+#define MAINNET_NAME "mainnet"
 
 // UI
 typedef bool (*ui_callback_t)(void); // return true to go back to idle screen
@@ -49,6 +50,15 @@ typedef struct {
 static inline void copy_bip32_path(bip32_path_t *const out, bip32_path_t const *const in) {
     memcpy(out->components, in->components, in->length * sizeof(*in->components));
     out->length = in->length;
+}
+
+static inline bool bip32_paths_eq(bip32_path_t const *const a, bip32_path_t const *const b) {
+    return a == b || (
+            a != NULL &&
+            b != NULL &&
+            a->length == b->length &&
+            memcmp(a->components, b->components, a->length * sizeof(*a->components)) == 0
+        );
 }
 
 typedef struct {
@@ -162,3 +172,9 @@ struct parsed_operation_group {
     _Static_assert(x <= INS_MAX, "APDU instruction is out of bounds"); \
     x; \
   })
+
+#define STRCPY(buff, x) \
+    ({ \
+        _Static_assert(sizeof(buff) >= sizeof(x) && sizeof(*x) == sizeof(char), "String won't fit in buffer"); \
+        strcpy(buff, x); \
+    })

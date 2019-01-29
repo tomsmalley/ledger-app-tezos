@@ -51,10 +51,9 @@ static bool is_level_authorized(parsed_baking_data_t const *const baking_info) {
 bool is_path_authorized(cx_curve_t curve, bip32_path_t const *const bip32_path) {
     check_null(bip32_path);
     return
-        bip32_path->length != 0 &&
-        bip32_path->length == N_data.bip32_path.length &&
         curve == N_data.curve &&
-        memcmp(bip32_path->components, N_data.bip32_path.components, bip32_path->length * sizeof(*bip32_path->components)) == 0;
+        bip32_path->length > 0 &&
+        bip32_paths_eq(bip32_path, &N_data.bip32_path);
 }
 
 void guard_baking_authorized(cx_curve_t curve, void *data, int datalen, bip32_path_t const *const bip32_path) {
