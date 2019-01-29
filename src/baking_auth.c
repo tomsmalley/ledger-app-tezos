@@ -16,11 +16,14 @@ bool is_valid_level(level_t lvl) {
 }
 
 static void write_high_watermark(parsed_baking_data_t const *const in) {
+    check_null(in);
     if (!is_valid_level(in->level)) THROW(EXC_WRONG_VALUES);
     UPDATE_NVRAM(ram, {
-        high_watermark_t *const dest = in->chain_id.v == ram->main_chain_id.v
-            ? &ram->hwm.main
-            : &ram->hwm.test;
+        // If the chain matches the main chain *or* the main chain is not set, then use 'main' HWM.
+        high_watermark_t *const dest =
+            in->chain_id.v == ram->main_chain_id.v || ram->main_chain_id.v == 0
+                ? &ram->hwm.main
+                : &ram->hwm.test;
         dest->highest_level = in->level;
         dest->had_endorsement = in->is_endorsement;
     });
