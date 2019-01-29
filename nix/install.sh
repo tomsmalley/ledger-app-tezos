@@ -18,6 +18,7 @@ export -f install-wallet
 export -f install-baking
 
 nix-shell "$root/nix/ledgerblue.nix" -A shell --run "$(cat <<EOF
+set -Eeuo pipefail
 if [ "${1:-}" = "wallet" ]; then
   install-wallet
 elif [ "${1:-}" = "baking" ]; then
