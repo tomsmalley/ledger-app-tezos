@@ -173,6 +173,8 @@ struct parsed_operation_group {
     x; \
   })
 
+#define MAX_INT_DIGITS 20
+
 #define STRCPY(buff, x) \
     ({ \
         _Static_assert(sizeof(buff) >= sizeof(x) && sizeof(*x) == sizeof(char), "String won't fit in buffer"); \
