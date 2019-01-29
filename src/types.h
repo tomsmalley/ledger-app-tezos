@@ -24,7 +24,6 @@ typedef struct {
 // Mainnet Chain ID: NetXdQprcVkpaWU
 static uint8_t const mainnet_chain_id_bytes[] = {122, 6, 167, 112};
 static chain_id_t const mainnet_chain_id = { .v = (uint32_t)mainnet_chain_id_bytes };
-#define MAINNET_NAME "mainnet"
 
 // UI
 typedef bool (*ui_callback_t)(void); // return true to go back to idle screen

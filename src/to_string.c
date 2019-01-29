@@ -106,7 +106,7 @@ void protocol_hash_to_string(char *buff, const size_t buff_size, const uint8_t h
     if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);
 }
 
-void chain_id_to_string(char *buff, size_t const buff_size, chain_id_t const chain_id) {
+void chain_id_to_string(char *const buff, size_t const buff_size, chain_id_t const chain_id) {
     if (buff_size < CHAIN_ID_BASE58_STRING_SIZE) THROW(EXC_WRONG_LENGTH);
 
     // Data to encode
@@ -123,6 +123,22 @@ void chain_id_to_string(char *buff, size_t const buff_size, chain_id_t const cha
 
     size_t out_size = buff_size;
     if (!b58enc(buff, &out_size, &data, sizeof(data))) THROW(EXC_WRONG_LENGTH);
+}
+
+#define STRCPY_OR_THROW(buff, size, x, exc) \
+    ({ \
+        if (size <= sizeof(x)) THROW(exc); \
+        strcpy(buff, x); \
+    })
+
+void chain_id_to_string_with_aliases(char *const out, size_t const out_size, chain_id_t const chain_id) {
+    if (chain_id.v == 0) {
+        STRCPY_OR_THROW(out, out_size, "any", EXC_WRONG_LENGTH);
+    } else if (chain_id.v == mainnet_chain_id.v) {
+        STRCPY_OR_THROW(out, out_size, "mainnet", EXC_WRONG_LENGTH);
+    } else {
+        chain_id_to_string(out, out_size, chain_id);
+    }
 }
 
 // These functions do not output terminating null bytes.
