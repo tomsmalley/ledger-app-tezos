@@ -116,7 +116,7 @@ void chain_id_to_string(char *const buff, size_t const buff_size, chain_id_t con
         uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
     } data = {
         .prefix = {87, 82, 0},
-        .chain_id = chain_id.v
+        .chain_id = BSWAP_32(chain_id.v) // Must hash big-endian data
     };
 
     compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));
@@ -131,13 +131,14 @@ void chain_id_to_string(char *const buff, size_t const buff_size, chain_id_t con
         strcpy(buff, x); \
     })
 
-void chain_id_to_string_with_aliases(char *const out, size_t const out_size, chain_id_t const chain_id) {
-    if (chain_id.v == 0) {
+void chain_id_to_string_with_aliases(char *const out, size_t const out_size, chain_id_t const *const chain_id) {
+    check_null(chain_id);
+    if (chain_id->v == 0) {
         STRCPY_OR_THROW(out, out_size, "any", EXC_WRONG_LENGTH);
-    } else if (chain_id.v == mainnet_chain_id.v) {
+    } else if (chain_id->v == mainnet_chain_id.v) {
         STRCPY_OR_THROW(out, out_size, "mainnet", EXC_WRONG_LENGTH);
     } else {
-        chain_id_to_string(out, out_size, chain_id);
+        chain_id_to_string(out, out_size, *chain_id);
     }
 }
 
@@ -217,9 +218,9 @@ size_t microtez_to_string(char *dest, uint64_t number) {
     return off;
 }
 
-void copy_string(char *dest, uint32_t buff_size, const char *src_in) {
-    const char *src = (const char *)PIC(src_in);
+void copy_string(char *const dest, size_t const buff_size, char const *const src) {
+    char const *const src_in = (char const *)PIC(src);
     // I don't care that we will loop through the string twice, latency is not an issue
-    if (strlen(src) >= buff_size) THROW(EXC_WRONG_LENGTH);
-    strcpy(dest, src);
+    if (strlen(src_in) >= buff_size) THROW(EXC_WRONG_LENGTH);
+    strcpy(dest, src_in);
 }

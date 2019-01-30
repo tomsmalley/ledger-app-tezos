@@ -31,9 +31,6 @@ struct apdu_setup_globals {
         level_t main;
         level_t test;
     } hwm;
-    struct {
-        char pkh[PKH_STRING_SIZE];
-    } ui;
 };
 
 typedef struct {

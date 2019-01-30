@@ -15,15 +15,14 @@ typedef uint32_t (*apdu_handler)(uint8_t instruction);
 
 typedef uint32_t level_t;
 
-#define CHAIN_ID_BASE58_STRING_SIZE 15
+#define CHAIN_ID_BASE58_STRING_SIZE (15 + 1) // with null termination
 
 typedef struct {
     uint32_t v;
 } chain_id_t;
 
 // Mainnet Chain ID: NetXdQprcVkpaWU
-static uint8_t const mainnet_chain_id_bytes[] = {122, 6, 167, 112};
-static chain_id_t const mainnet_chain_id = { .v = (uint32_t)mainnet_chain_id_bytes };
+static chain_id_t const mainnet_chain_id = { .v = 0x7A06A770 };
 
 // UI
 typedef bool (*ui_callback_t)(void); // return true to go back to idle screen
@@ -179,3 +178,6 @@ struct parsed_operation_group {
         _Static_assert(sizeof(buff) >= sizeof(x) && sizeof(*x) == sizeof(char), "String won't fit in buffer"); \
         strcpy(buff, x); \
     })
+
+// Reverses endiannes of 32-bit numbers.
+#define BSWAP_32(x) ((x>>24)&0xff) | ((x<<8)&0xff0000) | ((x>>8)&0xff00) | ((x<<24)&0xff000000)

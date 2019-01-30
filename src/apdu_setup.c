@@ -35,6 +35,12 @@ static bool ok(void) {
     return true;
 }
 
+static void pubkey_to_string(char *const out, size_t const out_size, cx_ecfp_public_key_t const *const pubkey) {
+    check_null(out);
+    check_null(pubkey);
+    pubkey_to_pkh_string(out, out_size, G.curve, pubkey);
+}
+
 #define SET_STATIC_UI_VALUE(index, str) register_ui_callback(index, copy_string, STATIC_UI_VALUE(str))
 
 __attribute__((noreturn)) static void prompt_setup(
@@ -56,10 +62,8 @@ __attribute__((noreturn)) static void prompt_setup(
         NULL,
     };
 
-    pubkey_to_pkh_string(G.ui.pkh, sizeof(G.ui.pkh), G.curve, &G.public_key);
-
     SET_STATIC_UI_VALUE(TYPE_INDEX, "Baking?");
-    register_ui_callback(ADDRESS_INDEX, copy_string, &G.ui.pkh);
+    register_ui_callback(ADDRESS_INDEX, pubkey_to_string, &G.public_key);
     register_ui_callback(CHAIN_INDEX, chain_id_to_string_with_aliases, &G.main_chain_id);
     register_ui_callback(MAIN_HWM_INDEX, number_to_string_indirect32, &G.hwm.main);
     register_ui_callback(TEST_HWM_INDEX, number_to_string_indirect32, &G.hwm.test);
