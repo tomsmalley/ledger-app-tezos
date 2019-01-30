@@ -116,7 +116,9 @@ void chain_id_to_string(char *const buff, size_t const buff_size, chain_id_t con
         uint8_t checksum[TEZOS_HASH_CHECKSUM_SIZE];
     } data = {
         .prefix = {87, 82, 0},
-        .chain_id = BSWAP_32(chain_id.v) // Must hash big-endian data
+
+        // Must hash big-endian data so treating little endian as big endian just flips
+        .chain_id = READ_UNALIGNED_BIG_ENDIAN(uint32_t, &chain_id.v)
     };
 
     compute_hash_checksum(data.checksum, &data, sizeof(data) - sizeof(data.checksum));

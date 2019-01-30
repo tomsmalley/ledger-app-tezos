@@ -178,6 +178,3 @@ struct parsed_operation_group {
         _Static_assert(sizeof(buff) >= sizeof(x) && sizeof(*x) == sizeof(char), "String won't fit in buffer"); \
         strcpy(buff, x); \
     })
-
-// Reverses endiannes of 32-bit numbers.
-#define BSWAP_32(x) ((x>>24)&0xff) | ((x<<8)&0xff0000) | ((x>>8)&0xff00) | ((x<<24)&0xff000000)
